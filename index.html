@@ -84,7 +84,7 @@ function s5(c){const r=c.map(x=>x.r).sort((a,b)=>b-a),fl=c.every(x=>x.s==c[0].s)
  if(g[0][0]==2&&g[1][0]==2)return[2,...k];if(g[0][0]==2)return[1,...k];return[0,...r]}
 const cmp=(a,b)=>{for(let i=0;i<Math.max(a.length,b.length);i++){const d=(a[i]||0)-(b[i]||0);if(d)return d}return 0};
 function best(c){let b=null;const n=c.length;
- for(let a=0;a<n;a++)for(let d=a+1;d<n;d++){const h=c.filter((_,i)=>i!=a&&i!=d),s=s5(h);if(!b||cmp(s,b)>0)b=s}return b}
+ (function f(st,ch){if(ch.length==5){const s=s5(ch);if(!b||cmp(s,b)>0)b=s;return}for(let i=st;i<n;i++)f(i+1,ch.concat(c[i]))})(0,[]);return b}
 const hname=s=>s[0]==8&&s[1]==14?'Royal Flush':HN[s[0]];
 
 // ---- bots ----
@@ -110,7 +110,7 @@ const nextI=i=>{do{i=(i+1)%5}while(P[i].out);return i};
 function pay(p,a){a=Math.min(a,p.chips);p.chips-=a;p.bet+=a;p.tot+=a;if(!p.chips)p.allin=true;return a}
 async function act(k){
  const p=P[k];turn=k;render();let a;
- if(k==0)a=await getHuman();else{await sleep(850);a=bot(p)}
+ if(k==0)a=await getHuman();else{await sleep(850);try{a=bot(p)}catch(e){console.error(e);a={t:p.bet>=cur?'c':'f'}}}
  const toCall=cur-p.bet;
  if(a.t=='f'){p.folded=true;L(p.n+' folds');p.note='Folded'}
  else if(a.t=='c'){const x=pay(p,toCall);L(p.n+(toCall==0?' checks':' calls $'+x+(p.allin?' (all-in)':'')));p.note=toCall==0?'Check':'Call'}
