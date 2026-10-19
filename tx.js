@@ -63,7 +63,7 @@
     const n = seats.filter(Boolean).length;
     ov(`<h2>Room</h2><p>Share this code</p><div class="cd" aria-label="Room code">${code}</div>
 <ul>${seats.map((on, i) => `<li>${i === 0 ? 'Host' : 'Seat ' + (i + 1)}: ${on ? '<b>Player</b>' + (i === seat ? ' (you)' : '') : 'Bot'}</li>`).join('')}</ul>
-<p>Empty seats are played by bots.</p>
+<p>Empty seats stay empty. No bots in online games.</p>
 ${isHost ? `<button id="xs"${n < 2 ? ' disabled' : ''}>Start game</button>` : '<p>Waiting for host to start…</p>'}
 <button id="xc">Copy code</button><button id="xl">Leave</button><p id="xm" role="status">${msg || (isHost && n < 2 ? 'Waiting for at least one friend.' : '')}</p>`);
     if (isHost) $('xs').onclick = start;
@@ -116,10 +116,12 @@ ${isHost ? `<button id="xs"${n < 2 ? ' disabled' : ''}>Start game</button>` : '<
     if (c.seat == null) return;
     seats[c.seat] = false;
     if (running) {
-      const p = P[c.seat]; p.human = false; p.n += ' (bot)';
-      L(p.n + ' took over');
+      const p = P[c.seat]; p.human = false; p.absent = true; p.folded = true;
+      L(p.n + ' left the table');
       const r = pend[c.seat];
-      if (r) { delete pend[c.seat]; r({ t: p.bet >= cur ? 'c' : 'f' }); }
+      if (r) { delete pend[c.seat]; r({ t: 'f' }); }
+      p.out = true;
+      if (!conns.length) ov('<h2>Everyone left</h2><button onclick="location.reload()">Back</button>');
     } else lobby();
   }
 
@@ -139,7 +141,7 @@ ${isHost ? `<button id="xs"${n < 2 ? ' disabled' : ''}>Start game</button>` : '<
 
   function start() {
     if (seats.filter(Boolean).length < 2) return;
-    P.forEach((p, i) => { if (i === 0) p.n = 'Host'; else if (seats[i]) { p.n = 'Player' + (i + 1); p.human = true; } });
+    P.forEach((p, i) => { if (i === 0) p.n = 'Host'; else if (seats[i]) { p.n = 'Player' + (i + 1); p.human = true; } else { p.absent = true; p.out = true; p.chips = 0; p.folded = true; } });
     running = true;
     conns.forEach((c) => c.open && c.send({ t: 'go' }));
     ovHide(); main();
