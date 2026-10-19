@@ -63,6 +63,8 @@ input[type=range]{width:150px}
 <div id="log"></div>
 <p id="ref">No-limit Hold'em · Blinds $10/$20 · Start $1000 · Busted bots leave the table · if you bust, the game restarts with all bots back</p>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="tx.js"></script>
 <script>
 const $=id=>document.getElementById(id),sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const R={11:'J',12:'Q',13:'K',14:'A'},S=['♠','♥','♦','♣'],SB=10,BB=20;
@@ -110,7 +112,7 @@ const nextI=i=>{do{i=(i+1)%5}while(P[i].out);return i};
 function pay(p,a){a=Math.min(a,p.chips);p.chips-=a;p.bet+=a;p.tot+=a;if(!p.chips)p.allin=true;return a}
 async function act(k){
  const p=P[k];turn=k;render();let a;
- if(k==0)a=await getHuman();else{await sleep(850);try{a=bot(p)}catch(e){console.error(e);a={t:p.bet>=cur?'c':'f'}}}
+ if(k==0)a=await getHuman();else if(p.human)a=await TX.ask(k);else{await sleep(850);try{a=bot(p)}catch(e){console.error(e);a={t:p.bet>=cur?'c':'f'}}}
  const toCall=cur-p.bet;
  if(a.t=='f'){p.folded=true;L(p.n+' folds');p.note='Folded'}
  else if(a.t=='c'){const x=pay(p,toCall);L(p.n+(toCall==0?' checks':' calls $'+x+(p.allin?' (all-in)':'')));p.note=toCall==0?'Check':'Call'}
@@ -177,8 +179,8 @@ function render(){
   if(p.out)return '';return `<div class="seat ${turn==i?'turn':''} ${p.folded?'fold':''} ${p.win?'win':''}" style="left:${POS[i][0]}%;top:${POS[i][1]}%">
   <div class="hole">${h}</div><div class="info">${p.n}${i==dealer?'<span class="dbtn">D</span>':''}<br>$${p.chips}<small>${p.note}</small></div>
   ${p.bet?`<div class="bet" style="top:${i==0?'-34px':i<3?'auto':'-30px'};${i>0&&i<3?'bottom:-26px':''}">$${p.bet}</div>`:''}</div>`}).join('');
- $('log').innerHTML=logs.map(s=>'<div>'+s+'</div>').join('')}
-render();main();
+ $('log').innerHTML=logs.map(s=>'<div>'+s+'</div>').join('');window.TX&&TX.sync()}
+render();window.TX?TX.menu():main();
 </script>
 </body>
 </html>
