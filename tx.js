@@ -1,5 +1,5 @@
 /* Texas Hold'em online add-on: room codes via PeerJS. Host runs the game, friends take seats,
-   empty seats stay bots. Clients only receive their own hole cards until showdown. */
+   empty seats stay empty. Clients only receive their own hole cards until showdown. */
 (() => {
   'use strict';
   const $ = (id) => document.getElementById(id);
@@ -62,7 +62,7 @@
   function lobbyUI(msg) {
     const n = seats.filter(Boolean).length;
     ov(`<h2>Room</h2><p>Share this code</p><div class="cd" aria-label="Room code">${code}</div>
-<ul>${seats.map((on, i) => `<li>${i === 0 ? 'Host' : 'Seat ' + (i + 1)}: ${on ? '<b>Player</b>' + (i === seat ? ' (you)' : '') : 'Bot'}</li>`).join('')}</ul>
+<ul>${seats.map((on, i) => `<li>${i === 0 ? 'Host' : 'Seat ' + (i + 1)}: ${on ? '<b>Player</b>' + (i === seat ? ' (you)' : '') : '<i>Empty</i>'}</li>`).join('')}</ul>
 <p>Empty seats stay empty. No bots in online games.</p>
 ${isHost ? `<button id="xs"${n < 2 ? ' disabled' : ''}>Start game</button>` : '<p>Waiting for host to start…</p>'}
 <button id="xc">Copy code</button><button id="xl">Leave</button><p id="xm" role="status">${msg || (isHost && n < 2 ? 'Waiting for at least one friend.' : '')}</p>`);
@@ -134,7 +134,7 @@ ${isHost ? `<button id="xs"${n < 2 ? ' disabled' : ''}>Start game</button>` : '<
       r(a.t === 'r' && isFinite(a.to) ? { t: 'r', to: +a.to } : a.t === 'c' ? { t: 'c' } : { t: 'f' });
     } else if (d.t === 'hi') seat = d.seat;
     else if (d.t === 'lobby') { if (!running) { seats = d.seats; lobbyUI(); } }
-    else if (d.t === 'go') { running = true; ovHide(); }
+    else if (d.t === 'go') { running = true; P.forEach((p) => { p.out = true; }); render(); ovHide(); }
     else if (d.t === 'st') apply(d);
     else if (d.t === 'full') { stop(); friends(); note('Room full or game already started.'); }
   }
