@@ -127,7 +127,7 @@ async function round(i){
   if(k<0)break;await act(k);i=nextI(k)}}
 async function hand(){
  let banner='';
- if(P[0].chips<=0||P.slice(1).every(p=>p.chips<=0)){banner=P[0].chips<=0?'You busted! New game — all bots are back':'You beat every bot! New game starts';L(banner);P.forEach(p=>{p.out=false;p.chips=1000});dealer=-1}
+ if(P[0].chips<=0||P.slice(1).every(p=>p.chips<=0)){banner=P[0].chips<=0?'You busted! New game — all bots are back':'You beat every bot! New game starts';L(banner);P.forEach(p=>{p.out=!!p.absent;p.chips=p.absent?0:1000});dealer=-1}
  P.forEach(p=>{if(p.chips<=0&&!p.out){p.out=true;L(p.n+' is eliminated')}p.hole=[];p.bet=p.tot=0;p.folded=p.out;p.allin=p.win=false;p.note=''});
  deck=[];for(let s=0;s<4;s++)for(let r=2;r<=14;r++)deck.push({r,s});
  for(let i=51;i>0;i--){const j=Math.floor(Math.random()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]]}
